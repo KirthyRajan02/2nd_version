@@ -1,0 +1,1 @@
+export type Stage = 'pending' | 'active' | 'completed' 
