@@ -526,8 +526,8 @@ export default function ProgramDashboard() {
   const resetFilters = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // Prevent form submission
     const defaultFilters = {
-      country: 'All Countrys',
-      batch: 'All Batchs',
+      country: 'All Countries',
+      batch: 'All Batches',
       stage: 'All Stages',
       program: 'All Programs'
     };
@@ -539,9 +539,9 @@ export default function ProgramDashboard() {
   const updateDashboardData = async (currentFilters: DashboardFilters) => {
     setIsLoading(true);
     try {
-      // Handle 'All Countrys' selection
+      // Handle 'All Countries' selection
       let countryData;
-      if (currentFilters.country === 'All Countrys') {
+      if (currentFilters.country === 'All Countries') {
         countryData = {
           activeParticipants: Object.values(DASHBOARD_DATA).reduce((sum, country) => sum + country.activeParticipants, 0),
           overallProgress: Math.round(
