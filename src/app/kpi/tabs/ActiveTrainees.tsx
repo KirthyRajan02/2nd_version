@@ -18,11 +18,11 @@ const mockData = {
     { month: 'Jun', count: 240 }
   ],
   yearlyData: [
-    { year: '2018', count: 155 },
-    { year: '2019', count: 150 },
-    { year: '2020', count: 195 },
-    { year: '2021', count: 170 },
-    { year: '2022', count: 240 },
+    { year: 'Jan', count: 155 },
+    { year: 'Feb', count: 150 },
+    { year: 'Mar', count: 195 },
+    { year: 'Apr', count: 170 },
+    { year: 'May', count: 240 },
   ],
   locationData: [
     { location: 'New York', count: 85 },

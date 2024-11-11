@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ResponsiveContainer, PieChart, Pie, BarChart, Bar, XAxis, YAxis, 
   Tooltip, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, 
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
 import MapView from '@/app/dashboard/MapView';
+import * as XLSX from 'xlsx';
 
 // Theme constants
 const THEME = {
@@ -472,6 +473,7 @@ interface StageData {
   training?: number;
   workshops?: number;
   completion?: number;
+  progress?: number;
 }
 
 interface ProgressMetric {
@@ -507,6 +509,8 @@ export default function ProgramDashboard() {
     stage: 'All Stages',
     program: 'All Programs'
   });
+  const [importedData, setImportedData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [metrics, setMetrics] = useState({
     activeParticipants: 0,
@@ -515,6 +519,85 @@ export default function ProgramDashboard() {
     progressMetrics: [] as ProgressMetric[],
     workshopCompletion: [] as WorkshopData[]
   });
+
+  // Add this function to process imported Excel data
+  const processExcelData = (jsonData: any[]) => {
+    // Group data by country
+    const countryData = jsonData.reduce((acc, row) => {
+      const country = row.country;
+      if (!acc[country]) {
+        acc[country] = {
+          activeParticipants: 0,
+          overallProgress: 0,
+          stageDistribution: []
+        };
+      }
+      
+      // Add to stage distribution
+      acc[country].stageDistribution.push({
+        name: row.stage,
+        value: Number(row.value),
+        status: row.status as 'onTrack' | 'delayed' | 'critical' | 'onprogress',
+        progress: Number(row.progress),
+        participants: Number(row.participants),
+        training: Number(row.training),
+        workshops: Number(row.workshops),
+        completion: Number(row.completion),
+        stage1: Number(row.stage1),
+        stage2: Number(row.stage2),
+        stage3: Number(row.stage3),
+        stage4: Number(row.stage4),
+        totalProgress: Number(row.totalProgress)
+      });
+
+      // Update country totals
+      acc[country].activeParticipants = acc[country].stageDistribution
+        .reduce((sum: number, stage: StageData) => sum + (stage.participants || 0), 0);
+      acc[country].overallProgress = Math.round(
+        acc[country].stageDistribution
+          .reduce((sum: number, stage: StageData) => sum + (stage.progress ?? 0), 0) / 
+        acc[country].stageDistribution.length
+      );
+
+      return acc;
+    }, {} as typeof DASHBOARD_DATA);
+
+    return countryData;
+  };
+
+  // Update handleExcelImport
+  const handleExcelImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        const processedData = processExcelData(jsonData);
+        setImportedData(processedData);
+        
+        // Automatically select the country from imported data
+        if (Object.keys(processedData).length > 0) {
+          const country = Object.keys(processedData)[0];
+          handleFilterChange('country', country);
+        }
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } catch (error) {
+        console.error('Error parsing Excel file:', error);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
   // Update the filter handling functions
   const handleFilterChange = (key: keyof DashboardFilters, value: string) => {
@@ -535,31 +618,40 @@ export default function ProgramDashboard() {
     updateDashboardData(defaultFilters);
   };
 
-  // Add a new function to handle data updates
+  // Modify the updateDashboardData function to use imported data
   const updateDashboardData = async (currentFilters: DashboardFilters) => {
     setIsLoading(true);
     try {
+      // Use imported data if available, otherwise use default DASHBOARD_DATA
+      const baseData = importedData ? {
+        [currentFilters.country]: {
+          activeParticipants: importedData.length,
+          overallProgress: calculateOverallProgress(importedData),
+          stageDistribution: processImportedData(importedData)
+        }
+      } : DASHBOARD_DATA;
+
       // Handle 'All Countries' selection
       let countryData;
       if (currentFilters.country === 'All Countries') {
         countryData = {
-          activeParticipants: Object.values(DASHBOARD_DATA).reduce((sum, country) => sum + country.activeParticipants, 0),
+          activeParticipants: Object.values(baseData).reduce((sum, country) => sum + country.activeParticipants, 0),
           overallProgress: Math.round(
-            Object.values(DASHBOARD_DATA).reduce((sum, country) => sum + country.overallProgress, 0) / Object.keys(DASHBOARD_DATA).length
+            Object.values(baseData).reduce((sum, country) => sum + country.overallProgress, 0) / Object.keys(baseData).length
           ),
-          stageDistribution: Object.values(DASHBOARD_DATA)[0].stageDistribution.map((stage, index) => ({
+          stageDistribution: Object.values(baseData)[0].stageDistribution.map((stage, index) => ({
             ...stage,
-            value: Object.values(DASHBOARD_DATA).reduce((sum, country) => 
+            value: Object.values(baseData).reduce((sum, country) => 
               sum + (country.stageDistribution[index]?.value || 0), 0
             )
           }))
         };
       } else {
-        countryData = DASHBOARD_DATA[currentFilters.country as keyof typeof DASHBOARD_DATA] || DASHBOARD_DATA.UAE;
+        countryData = baseData[currentFilters.country as keyof typeof baseData] || baseData.UAE;
       }
 
       // Apply batch and program multipliers
-      const batchMultiplier = currentFilters.batch === 'All Batchs' ? 1 :
+      const batchMultiplier = currentFilters.batch === 'All Batches' ? 1 :
                              currentFilters.batch === '2024-Q1' ? 1 :
                              currentFilters.batch === '2024-Q2' ? 0.8 :
                              currentFilters.batch === '2024-Q3' ? 0.6 : 1;
@@ -642,6 +734,29 @@ export default function ProgramDashboard() {
     }
   };
 
+  // Add helper function to process imported data
+  const processImportedData = (data: any[]) => {
+    // Transform imported data to match the expected format
+    const stages = ['Pre-Visa', 'Visa Processing', 'Onboarding', 'Acknowledgment', 'Training'];
+    return stages.map(stageName => {
+      const stageData = data.filter(item => item.stage === stageName);
+      return {
+        name: stageName,
+        value: stageData.length,
+        status: determineStatus(stageData),
+        stage1: calculateStageMetric(stageData, 'stage1'),
+        stage2: calculateStageMetric(stageData, 'stage2'),
+        stage3: calculateStageMetric(stageData, 'stage3'),
+        stage4: calculateStageMetric(stageData, 'stage4'),
+        totalProgress: calculateProgress(stageData),
+        participants: stageData.length,
+        training: calculateTraining(stageData),
+        workshops: calculateWorkshops(stageData),
+        completion: calculateCompletion(stageData)
+      };
+    });
+  };
+
   // Remove the useEffect hook that was watching filters
   // Instead, call updateDashboardData on initial load
   useEffect(() => {
@@ -654,7 +769,24 @@ export default function ProgramDashboard() {
       <div className="bg-emerald-1000/80 p-1 shadow-lg rounded-xl">
         <div className="flex flex-col">
           {/* Top row with login button */}
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-end mb-2 gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".xlsx,.xls"
+              onChange={handleExcelImport}
+              className="hidden"
+              id="excel-import"
+            />
+            <label htmlFor="excel-import">
+              <Button 
+                variant="outline" 
+                className="bg-emerald-950/50 border-emerald-600/30 text-white hover:bg-[#846EDB] rounded-lg"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Import Excel
+              </Button>
+            </label>
             <Button 
               variant="outline" 
               className="bg-emerald-950/50 border-emerald-600/30 text-white hover:bg-[#846EDB] rounded-lg"
@@ -729,6 +861,22 @@ export default function ProgramDashboard() {
             </Button>
           </div>
         </Card>
+
+        {importedData && (
+          <div className="flex items-center gap-2 px-2 py-1 bg-emerald-900/30 rounded-md border border-[#6D988B]">
+            <span className="text-emerald-50 text-sm">📄 Imported Data</span>
+            <button
+              onClick={() => {
+                setImportedData(null);
+                updateDashboardData(filters);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
+              className="text-emerald-50 hover:text-red-400"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center h-[400px]">
@@ -988,6 +1136,40 @@ export default function ProgramDashboard() {
   );
 }
 
+// Helper functions for processing imported data
+function calculateStageMetric(data: any[], metric: string) {
+  return data.reduce((acc, item) => acc + (Number(item[metric]) || 0), 0);
+}
+
+function calculateProgress(data: any[]) {
+  return data.reduce((acc, item) => acc + (Number(item.progress) || 0), 0) / (data.length || 1);
+}
+
+function calculateTraining(data: any[]) {
+  return data.reduce((acc, item) => acc + (Number(item.training) || 0), 0);
+}
+
+function calculateWorkshops(data: any[]) {
+  return data.reduce((acc, item) => acc + (Number(item.workshops) || 0), 0);
+}
+
+function calculateCompletion(data: any[]) {
+  return data.reduce((acc, item) => acc + (Number(item.completion) || 0), 0) / (data.length || 1);
+}
+
+function determineStatus(data: any[]): 'onTrack' | 'delayed' | 'critical' | 'onprogress' {
+  const avgProgress = calculateProgress(data);
+  if (avgProgress >= 80) return 'onTrack';
+  if (avgProgress >= 60) return 'delayed';
+  return 'critical';
+}
+
+function calculateOverallProgress(data: any[]) {
+  return Math.round(
+    data.reduce((acc, item) => acc + (Number(item.progress) || 0), 0) / (data.length || 1)
+  );
+}
+
 // Component for filter select dropdowns
 function FilterSelect({ placeholder, options, value, onChange }: { 
   placeholder: string, 
@@ -1166,7 +1348,7 @@ function ChartCard({
               }}
             />
             <Legend />
-            <Bar dataKey="completed" fill={THEME.colors.primary} stackId="a">
+            <Bar dataKey="completed" fill={THEME.colors.primary} stackId="a" radius={[4, 4, 0, 0]}>
               <LabelList 
                 dataKey="completed" 
                 position="center"
@@ -1179,7 +1361,7 @@ function ChartCard({
                 }}
               />
             </Bar>
-            <Bar dataKey="pending" fill={THEME.colors.warning} stackId="a">
+            <Bar dataKey="pending" fill={THEME.colors.warning} stackId="a" radius={[4, 4, 0, 0]}>
               <LabelList 
                 dataKey="pending" 
                 position="center"
@@ -1292,9 +1474,10 @@ function ChartCard({
             <Bar 
               dataKey="participants" 
               fill={THEME.colors.primary}
-              fillOpacity={0.4}
+              fillOpacity={0.7}  // Increased from previous value to make it lighter
               barSize={40}
               name="Participants Count"
+              radius={[4, 4, 0, 0]} 
             >
               <LabelList 
                 dataKey="participants" 

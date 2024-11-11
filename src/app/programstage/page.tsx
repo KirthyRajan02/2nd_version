@@ -565,8 +565,8 @@ export default function ProgramDashboard() {
   const resetFilters = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // Prevent form submission
     const defaultFilters = {
-      country: 'All Countrys',
-      batch: 'All Batchs',
+      country: 'All Countries',
+      batch: 'All Batches',
       stage: 'All Stages',
       program: 'All Programs'
     };
@@ -578,9 +578,9 @@ export default function ProgramDashboard() {
   const updateDashboardData = useCallback(async (currentFilters: DashboardFilters) => {
     setIsLoading(true);
     try {
-      // Handle 'All Countrys' selection
+      // Handle 'All Countries' selection
       let countryData;
-      if (currentFilters.country === 'All Countrys') {
+      if (currentFilters.country === 'All Countries') {
         countryData = {
           activeParticipants: Object.values(DASHBOARD_DATA).reduce((sum, country) => sum + country.activeParticipants, 0),
           overallProgress: Math.round(
@@ -598,7 +598,7 @@ export default function ProgramDashboard() {
       }
 
       // Apply batch and program multipliers
-      const batchMultiplier = currentFilters.batch === 'All Batchs' ? 1 :
+      const batchMultiplier = currentFilters.batch === 'All Batches' ? 1 :
                              currentFilters.batch === '2024-Q1' ? 1 :
                              currentFilters.batch === '2024-Q2' ? 0.8 :
                              currentFilters.batch === '2024-Q3' ? 0.6 : 1;
