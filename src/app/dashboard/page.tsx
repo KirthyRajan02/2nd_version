@@ -792,9 +792,9 @@ function ChartCard({
         case 'line':
         return (
           <LineChart 
-            data={data}
+            data={data.filter(d => d.participants !== undefined)}
             margin={{
-              top: 30,    // Increased top margin
+              top: 30,
               right: 30,
               left: 20,
               bottom: 20
@@ -822,26 +822,28 @@ function ChartCard({
             />
             <Tooltip />
             <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="participants" 
-              stroke={THEME.colors.primary} 
-              strokeWidth={2}
-              dot={{ fill: THEME.colors.primary, r: 6 }}
-            >
-              <LabelList 
+            {data.some(d => d.participants !== undefined) && (
+              <Line 
+                type="monotone" 
                 dataKey="participants" 
-                position="top"
-                fill="#fff"
-                offset={15}        // Increased offset from 10 to 15
-                formatter={(value: number) => `${value}`}
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  textShadow: '0 0 3px rgba(0,0,0,0.75)'
-                }}
-              />
-            </Line>
+                stroke={THEME.colors.primary} 
+                strokeWidth={2}
+                dot={{ fill: THEME.colors.primary, r: 6 }}
+              >
+                <LabelList 
+                  dataKey="participants" 
+                  position="top"
+                  fill="#fff"
+                  offset={15}
+                  formatter={(value: number) => `${value}`}
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    textShadow: '0 0 3px rgba(0,0,0,0.75)'
+                  }}
+                />
+              </Line>
+            )}
           </LineChart>
         );
         // visa process timeline
