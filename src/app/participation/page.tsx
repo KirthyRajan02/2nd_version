@@ -144,11 +144,10 @@ export default function Dashboard() {
             >
               <MenuItem value="">Select Batch</MenuItem>
               {[
-                "Batch 2024 - Winter",
-                "Batch 2024 - Spring",
-                "Batch 2024 - Summer",
-                "Batch 2024 - Fall",
-                "Batch 2025 - Winter"
+                "2024-Q1",
+                "2024-Q2",
+                "2024-Q3",
+                "2024-Q4"
               ].map((batch) => (
                 <MenuItem key={batch} value={batch}>
                   {batch}

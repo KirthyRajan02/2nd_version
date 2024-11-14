@@ -16,19 +16,19 @@ export function ResourcesTab() {
     status: 'Completed' | 'In Progress' | 'Not Started' | 'Locked';
     icon: React.ComponentType;
   }> = [
-    { title: "Front Office Operations Manual", type: "Document", format: "PDF", duration: "2 hours", status: "Completed", icon: FileText },
-    { title: "Guest Service Excellence", type: "Video", format: "MP4", duration: "45 mins", status: "In Progress", icon: Video },
-    { title: "Hotel Management System Guide", type: "Document", format: "PDF", duration: "1.5 hours", status: "Not Started", icon: FileText },
-    { title: "Communication Skills Workshop", type: "Interactive", format: "HTML", duration: "1 hour", status: "Locked", icon: Lock },
-    { title: "Customer Service Handbook", type: "Document", format: "PDF", duration: "3 hours", status: "Not Started", icon: FileText },
-    { title: "Reservation System Training", type: "Video", format: "MP4", duration: "1.5 hours", status: "Locked", icon: Video },
-    { title: "Emergency Procedures Guide", type: "Document", format: "PDF", duration: "1 hour", status: "Completed", icon: FileText },
-    { title: "Housekeeping Standards", type: "Document", format: "PDF", duration: "2.5 hours", status: "In Progress", icon: FileText },
-    { title: "Food Safety Guidelines", type: "Document", format: "PDF", duration: "2 hours", status: "Not Started", icon: FileText },
-    { title: "Security Protocols", type: "Document", format: "PDF", duration: "1.5 hours", status: "Not Started", icon: FileText },
-    { title: "Property Management System", type: "Document", format: "PDF", duration: "3 hours", status: "Locked", icon: FileText },
-    { title: "Guest Complaint Resolution", type: "Document", format: "PDF", duration: "1 hour", status: "Not Started", icon: FileText }
-  ];
+      { title: "Front Office Operations Manual", type: "Document", format: "PDF", duration: "2 hours", status: "Completed", icon: FileText },
+      { title: "Guest Service Excellence", type: "Video", format: "MP4", duration: "45 mins", status: "In Progress", icon: Video },
+      { title: "Hotel Management System Guide", type: "Document", format: "PDF", duration: "1.5 hours", status: "Not Started", icon: FileText },
+      { title: "Communication Skills Workshop", type: "Interactive", format: "HTML", duration: "1 hour", status: "Locked", icon: Lock },
+      { title: "Customer Service Handbook", type: "Document", format: "PDF", duration: "3 hours", status: "Not Started", icon: FileText },
+      { title: "Reservation System Training", type: "Video", format: "MP4", duration: "1.5 hours", status: "Locked", icon: Video },
+      { title: "Emergency Procedures Guide", type: "Document", format: "PDF", duration: "1 hour", status: "Completed", icon: FileText },
+      { title: "Housekeeping Standards", type: "Document", format: "PDF", duration: "2.5 hours", status: "In Progress", icon: FileText },
+      { title: "Food Safety Guidelines", type: "Document", format: "PDF", duration: "2 hours", status: "Not Started", icon: FileText },
+      { title: "Security Protocols", type: "Document", format: "PDF", duration: "1.5 hours", status: "Not Started", icon: FileText },
+      { title: "Property Management System", type: "Document", format: "PDF", duration: "3 hours", status: "Locked", icon: FileText },
+      { title: "Guest Complaint Resolution", type: "Document", format: "PDF", duration: "1 hour", status: "Not Started", icon: FileText }
+    ];
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterType, setFilterType] = React.useState('all');

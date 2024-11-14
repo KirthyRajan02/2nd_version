@@ -102,8 +102,8 @@
           </h1>
 
           {/* Filter Controls */}
-          <div className="w-full  -[#004D47] p-4 rounded-lg border border-[#005C54]">
-            <div className="flex items-center gap-4">
+          <div className="w-full  -[#004D47] p-1 rounded-lg border border-[#005C54]">
+            <div className="flex items-center gap-1">
               {/* Categories */}
               <div className="grid grid-cols-4 gap-4 flex-1">
                 <Select value={selectedCountry} onValueChange={setSelectedCountry}>

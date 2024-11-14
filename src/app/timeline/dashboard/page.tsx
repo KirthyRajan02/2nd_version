@@ -189,57 +189,57 @@ export default function DashboardPage() {
       {
         name: 'Resume Screening',
         totalCases: 400,
-        completed: 380,
+        completed: 400,
         inProgress: 15,
-        delayed: 5,
-        completionRate: 95,
-        expectedTimeframe: '3-5 days',
+        delayed: 0,
+        completionRate: 100,
+        expectedTimeframe: 'Completed',
         averageTime: 4,
         status: 'On Track'
       },
       {
         name: 'Initial Interview',
         totalCases: 380,
-        completed: 320,
+        completed: 380,
         inProgress: 40,
-        delayed: 20,
-        completionRate: 84,
-        expectedTimeframe: '7-10 days',
+        delayed: 0,
+        completionRate: 100,
+        expectedTimeframe: 'Completed',
         averageTime: 9,
-        status: 'Slight Delay'
+        status: 'On Track'
       },
       {
         name: 'Background Check',
         totalCases: 320,
-        completed: 250,
+        completed: 320,
         inProgress: 50,
-        delayed: 20,
-        completionRate: 78,
-        expectedTimeframe: '10-15 days',
+        delayed: 0,
+        completionRate: 100,
+        expectedTimeframe: 'Completed',
         averageTime: 12,
         status: 'On Track'
       },
       {
         name: 'Training Center Allocation',
         totalCases: 250,
-        completed: 180,
-        inProgress: 40,
+        completed: 220,
+        inProgress: 0,
         delayed: 30,
-        completionRate: 72,
-        expectedTimeframe: '5-7 days',
+        completionRate: 90,
+        expectedTimeframe: 'Ongoing',
         averageTime: 8,
-        status: 'Delayed'
+        status: 'Slight Delay'
       },
       {
         name: 'Onboarding',
         totalCases: 180,
-        completed: 150,
+        completed: 120,
         inProgress: 20,
-        delayed: 10,
-        completionRate: 83,
-        expectedTimeframe: '2-3 days',
+        delayed: 60,
+        completionRate: 78,
+        expectedTimeframe: 'Ongoing',
         averageTime: 3,
-        status: 'On Track'
+        status: 'Delayed'
       }
     ]
   }
@@ -624,7 +624,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="bg-[#002633] p-6 rounded-xl">
-              <h3 className="text-lg font-semibold text-white mb-4">Stage Details</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">Timeline Metrics</h3>
               <div className="space-y-4">
                 {stageAnalysisData.stages.map((stage, index) => (
                   <div key={index} className="p-4 bg-[#001F29] rounded-lg">
@@ -650,7 +650,7 @@ export default function DashboardPage() {
                         <div className="text-white">{stage.completed}/{stage.totalCases}</div>
                       </div>
                       <div>
-                        <div className="text-gray-400">Expected Time</div>
+                        <div className="text-gray-400">Progress Status</div>
                         <div className="text-white">{stage.expectedTimeframe}</div>
                       </div>
                       <div>

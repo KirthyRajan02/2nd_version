@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ResponsiveContainer, PieChart, Pie, BarChart, Bar, XAxis, YAxis, 
   Tooltip, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, 
@@ -14,7 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
 import MapView from '@/app/dashboard/MapView';
-import * as XLSX from 'xlsx';
+import { Upload, Plus } from "lucide-react";
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+
 
 // Theme constants
 const THEME = {
@@ -41,418 +44,6 @@ const THEME = {
   
 
 
-
-// Add this static data object at the top of the file, after the THEME constant
-
-const DASHBOARD_DATA = {
-    UAE: {
-      activeParticipants: 950,
-      overallProgress: 82,
-      stageDistribution: [
-        { 
-          name: 'Pre-Visa', 
-          value: 230,
-          status: 'onTrack' as const,
-          progress: 90,
-          participants: 250,
-          training: 85,
-          workshops: 220,
-          completion: 95,
-          stage1: 250,
-          stage2: 200,
-          stage3: 150,
-          stage4: 100,
-          totalProgress: 85
-        },
-        { 
-          name: 'Visa Processing', 
-          value: 160,
-          status: 'delayed' as const,
-          progress: 75,
-          participants: 180,
-          training: 70,
-          workshops: 160,
-          completion: 80,
-          stage1: 200,
-          stage2: 160,
-          stage3: 120,
-          stage4: 80,
-          totalProgress: 70
-        },
-        { 
-          name: 'Onboarding', 
-          value: 210,
-          status: 'critical' as const,
-          progress: 65,
-          participants: 200,
-          training: 60,
-          workshops: 170,
-          completion: 70,
-          stage1: 180,
-          stage2: 140,
-          stage3: 100,
-          stage4: 60,
-          totalProgress: 60
-        },
-        { 
-          name: 'Acknowledgment', 
-          value: 110,
-          status: 'onprogress' as const,
-          progress: 45,
-          participants: 100,
-          training: 40,
-          workshops: 80,
-          completion: 50,
-          stage1: 150,
-          stage2: 120,
-          stage3: 80,
-          stage4: 40,
-          totalProgress: 45
-        },
-        { 
-          name: 'Training', 
-          value: 180, 
-          status: 'onprogress' as const,
-          progress: 60,
-          participants: 180,
-          training: 55,
-          workshops: 150,
-          completion: 65,
-          stage1: 170,
-          stage2: 130,
-          stage3: 90,
-          stage4: 50,
-          totalProgress: 55
-        }
-      ]
-    },
-    USA: {
-      activeParticipants: 850,
-      overallProgress: 75,
-      stageDistribution: [
-        { 
-          name: 'Pre-Visa', 
-          value: 200,
-          status: 'onTrack' as const,
-          progress: 85,
-          participants: 220,
-          training: 80,
-          workshops: 190,
-          completion: 90,
-          stage1: 220,
-          stage2: 180,
-          stage3: 140,
-          stage4: 90,
-          totalProgress: 80
-        },
-        { 
-          name: 'Visa Processing', 
-          value: 180,
-          status: 'delayed' as const,
-          progress: 70,
-          participants: 200,
-          training: 65,
-          workshops: 170,
-          completion: 75,
-          stage1: 190,
-          stage2: 150,
-          stage3: 110,
-          stage4: 70,
-          totalProgress: 65
-        },
-        { 
-          name: 'Onboarding', 
-          value: 170,
-          status: 'critical' as const,
-          progress: 60,
-          participants: 190,
-          training: 55,
-          workshops: 160,
-          completion: 65,
-          stage1: 170,
-          stage2: 130,
-          stage3: 90,
-          stage4: 50,
-          totalProgress: 55
-        },
-        { 
-          name: 'Acknowledgment', 
-          value: 150,
-          status: 'onprogress' as const,
-          progress: 50,
-          participants: 170,
-          training: 45,
-          workshops: 140,
-          completion: 55,
-          stage1: 160,
-          stage2: 120,
-          stage3: 80,
-          stage4: 40,
-          totalProgress: 50
-        },
-        { 
-          name: 'Training', 
-          value: 150,
-          status: 'onprogress' as const,
-          progress: 55,
-          participants: 170,
-          training: 50,
-          workshops: 140,
-          completion: 60,
-          stage1: 160,
-          stage2: 120,
-          stage3: 80,
-          stage4: 40,
-          totalProgress: 50
-        }
-      ]
-    },
-    UK: {
-      activeParticipants: 650,
-      overallProgress: 60,
-      stageDistribution: [
-        { 
-          name: 'Pre-Visa', 
-          value: 150,
-          status: 'onTrack' as const,
-          progress: 80,
-          participants: 170,
-          training: 75,
-          workshops: 140,
-          completion: 85,
-          stage1: 170,
-          stage2: 140,
-          stage3: 110,
-          stage4: 80,
-          totalProgress: 75
-        },
-        { 
-          name: 'Visa Processing', 
-          value: 130,
-          status: 'delayed' as const,
-          progress: 65,
-          participants: 150,
-          training: 60,
-          workshops: 120,
-          completion: 70,
-          stage1: 140,
-          stage2: 110,
-          stage3: 80,
-          stage4: 50,
-          totalProgress: 60
-        },
-        { 
-          name: 'Onboarding', 
-          value: 120,
-          status: 'critical' as const,
-          progress: 55,
-          participants: 140,
-          training: 50,
-          workshops: 110,
-          completion: 60,
-          stage1: 130,
-          stage2: 100,
-          stage3: 70,
-          stage4: 40,
-          totalProgress: 50
-        },
-        { 
-          name: 'Acknowledgment', 
-          value: 130,
-          status: 'onprogress' as const,
-          progress: 45,
-          participants: 150,
-          training: 40,
-          workshops: 120,
-          completion: 50,
-          stage1: 140,
-          stage2: 110,
-          stage3: 80,
-          stage4: 50,
-          totalProgress: 45
-        },
-        { 
-          name: 'Training', 
-          value: 120,
-          status: 'onprogress' as const,
-          progress: 50,
-          participants: 140,
-          training: 45,
-          workshops: 110,
-          completion: 55,
-          stage1: 130,
-          stage2: 100,
-          stage3: 70,
-          stage4: 40,
-          totalProgress: 45
-        }
-      ]
-    },
-    Canada: {
-      activeParticipants: 450,
-      overallProgress: 85,
-      stageDistribution: [
-        { 
-          name: 'Pre-Visa', 
-          value: 120,
-          status: 'onTrack' as const,
-          progress: 95,
-          participants: 130,
-          training: 90,
-          workshops: 110,
-          completion: 100,
-          stage1: 130,
-          stage2: 110,
-          stage3: 90,
-          stage4: 70,
-          totalProgress: 90
-        },
-        { 
-          name: 'Visa Processing', 
-          value: 100,
-          status: 'delayed' as const,
-          progress: 80,
-          participants: 110,
-          training: 75,
-          workshops: 90,
-          completion: 85,
-          stage1: 110,
-          stage2: 90,
-          stage3: 70,
-          stage4: 50,
-          totalProgress: 75
-        },
-        { 
-          name: 'Onboarding', 
-          value: 90,
-          status: 'critical' as const,
-          progress: 70,
-          participants: 100,
-          training: 65,
-          workshops: 80,
-          completion: 75,
-          stage1: 100,
-          stage2: 80,
-          stage3: 60,
-          stage4: 40,
-          totalProgress: 65
-        },
-        { 
-          name: 'Acknowledgment', 
-          value: 70,
-          status: 'onprogress' as const,
-          progress: 60,
-          participants: 80,
-          training: 55,
-          workshops: 60,
-          completion: 65,
-          stage1: 80,
-          stage2: 60,
-          stage3: 40,
-          stage4: 20,
-          totalProgress: 55
-        },
-        { 
-          name: 'Training', 
-          value: 70,
-          status: 'onprogress' as const,
-          progress: 65,
-          participants: 80,
-          training: 60,
-          workshops: 60,
-          completion: 70,
-          stage1: 80,
-          stage2: 60,
-          stage3: 40,
-          stage4: 20,
-          totalProgress: 60
-        }
-      ]
-    },
-    Australia: {
-      activeParticipants: 350,
-      overallProgress: 90,
-      stageDistribution: [
-        { 
-          name: 'Pre-Visa', 
-          value: 100,
-          status: 'onTrack' as const,
-          progress: 100,
-          participants: 100,
-          training: 95,
-          workshops: 90,
-          completion: 100,
-          stage1: 100,
-          stage2: 90,
-          stage3: 80,
-          stage4: 70,
-          totalProgress: 95
-        },
-        { 
-          name: 'Visa Processing', 
-          value: 80,
-          status: 'delayed' as const,
-          progress: 85,
-          participants: 80,
-          training: 80,
-          workshops: 70,
-          completion: 90,
-          stage1: 80,
-          stage2: 70,
-          stage3: 60,
-          stage4: 50,
-          totalProgress: 80
-        },
-        { 
-          name: 'Onboarding', 
-          value: 70,
-          status: 'critical' as const,
-          progress: 75,
-          participants: 70,
-          training: 70,
-          workshops: 60,
-          completion: 80,
-          stage1: 70,
-          stage2: 60,
-          stage3: 50,
-          stage4: 40,
-          totalProgress: 70
-        },
-        { 
-          name: 'Acknowledgment', 
-          value: 50,
-          status: 'onprogress' as const,
-          progress: 65,
-          participants: 50,
-          training: 60,
-          workshops: 40,
-          completion: 70,
-          stage1: 50,
-          stage2: 40,
-          stage3: 30,
-          stage4: 20,
-          totalProgress: 60
-        },
-        { 
-          name: 'Training', 
-          value: 50,
-          status: 'onprogress' as const,
-          progress: 70,
-          participants: 50,
-          training: 65,
-          workshops: 40,
-          completion: 75,
-          stage1: 50,
-          stage2: 40,
-          stage3: 30,
-          stage4: 20,
-          totalProgress: 65
-        }
-      ]
-    }
-  };
-
-
 interface DashboardFilters {
   country: string;
   batch: string;
@@ -473,7 +64,6 @@ interface StageData {
   training?: number;
   workshops?: number;
   completion?: number;
-  progress?: number;
 }
 
 interface ProgressMetric {
@@ -501,7 +91,26 @@ interface ChartData {
   stage?: string;
 }
 
+// Add these helper functions before the ProgramDashboard component
+const calculateProgressMetrics = (data: any): ProgressMetric[] => {
+  return [
+    { subject: 'Participants', value: data.activeParticipants, fullMark: 1000 },
+    { subject: 'Training', value: data.overallProgress, fullMark: 100 },
+    { subject: 'Workshops', value: 75, fullMark: 100 },
+    { subject: 'Completion', value: 80, fullMark: 100 }
+  ];
+};
+
+const calculateWorkshopCompletion = (data: any): WorkshopData[] => {
+  return data.stageDistribution.map((stage: StageData) => ({
+    name: stage.name,
+    completed: stage.workshops || 0,
+    pending: (stage.participants || 0) - (stage.workshops || 0)
+  }));
+};
+
 export default function ProgramDashboard() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>({
     country: 'All Countries',
@@ -509,8 +118,6 @@ export default function ProgramDashboard() {
     stage: 'All Stages',
     program: 'All Programs'
   });
-  const [importedData, setImportedData] = useState<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [metrics, setMetrics] = useState({
     activeParticipants: 0,
@@ -519,85 +126,6 @@ export default function ProgramDashboard() {
     progressMetrics: [] as ProgressMetric[],
     workshopCompletion: [] as WorkshopData[]
   });
-
-  // Add this function to process imported Excel data
-  const processExcelData = (jsonData: any[]) => {
-    // Group data by country
-    const countryData = jsonData.reduce((acc, row) => {
-      const country = row.country;
-      if (!acc[country]) {
-        acc[country] = {
-          activeParticipants: 0,
-          overallProgress: 0,
-          stageDistribution: []
-        };
-      }
-      
-      // Add to stage distribution
-      acc[country].stageDistribution.push({
-        name: row.stage,
-        value: Number(row.value),
-        status: row.status as 'onTrack' | 'delayed' | 'critical' | 'onprogress',
-        progress: Number(row.progress),
-        participants: Number(row.participants),
-        training: Number(row.training),
-        workshops: Number(row.workshops),
-        completion: Number(row.completion),
-        stage1: Number(row.stage1),
-        stage2: Number(row.stage2),
-        stage3: Number(row.stage3),
-        stage4: Number(row.stage4),
-        totalProgress: Number(row.totalProgress)
-      });
-
-      // Update country totals
-      acc[country].activeParticipants = acc[country].stageDistribution
-        .reduce((sum: number, stage: StageData) => sum + (stage.participants || 0), 0);
-      acc[country].overallProgress = Math.round(
-        acc[country].stageDistribution
-          .reduce((sum: number, stage: StageData) => sum + (stage.progress ?? 0), 0) / 
-        acc[country].stageDistribution.length
-      );
-
-      return acc;
-    }, {} as typeof DASHBOARD_DATA);
-
-    return countryData;
-  };
-
-  // Update handleExcelImport
-  const handleExcelImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        
-        const processedData = processExcelData(jsonData);
-        setImportedData(processedData);
-        
-        // Automatically select the country from imported data
-        if (Object.keys(processedData).length > 0) {
-          const country = Object.keys(processedData)[0];
-          handleFilterChange('country', country);
-        }
-        
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } catch (error) {
-        console.error('Error parsing Excel file:', error);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
 
   // Update the filter handling functions
   const handleFilterChange = (key: keyof DashboardFilters, value: string) => {
@@ -618,143 +146,33 @@ export default function ProgramDashboard() {
     updateDashboardData(defaultFilters);
   };
 
-  // Modify the updateDashboardData function to use imported data
+  // Add a new function to handle data updates
   const updateDashboardData = async (currentFilters: DashboardFilters) => {
     setIsLoading(true);
     try {
-      // Use imported data if available, otherwise use default DASHBOARD_DATA
-      const baseData = importedData ? {
-        [currentFilters.country]: {
-          activeParticipants: importedData.length,
-          overallProgress: calculateOverallProgress(importedData),
-          stageDistribution: processImportedData(importedData)
+      // Fetch data from MongoDB instead of static data
+      const response = await axios.get('/api/dashboard', {
+        params: {
+          country: currentFilters.country,
+          batch: currentFilters.batch,
+          stage: currentFilters.stage,
+          program: currentFilters.program
         }
-      } : DASHBOARD_DATA;
-
-      // Handle 'All Countries' selection
-      let countryData;
-      if (currentFilters.country === 'All Countries') {
-        countryData = {
-          activeParticipants: Object.values(baseData).reduce((sum, country) => sum + country.activeParticipants, 0),
-          overallProgress: Math.round(
-            Object.values(baseData).reduce((sum, country) => sum + country.overallProgress, 0) / Object.keys(baseData).length
-          ),
-          stageDistribution: Object.values(baseData)[0].stageDistribution.map((stage, index) => ({
-            ...stage,
-            value: Object.values(baseData).reduce((sum, country) => 
-              sum + (country.stageDistribution[index]?.value || 0), 0
-            )
-          }))
-        };
-      } else {
-        countryData = baseData[currentFilters.country as keyof typeof baseData] || baseData.UAE;
-      }
-
-      // Apply batch and program multipliers
-      const batchMultiplier = currentFilters.batch === 'All Batches' ? 1 :
-                             currentFilters.batch === '2024-Q1' ? 1 :
-                             currentFilters.batch === '2024-Q2' ? 0.8 :
-                             currentFilters.batch === '2024-Q3' ? 0.6 : 1;
-
-      const programMultiplier = currentFilters.program === 'All Programs' ? 1 :
-                               currentFilters.program === 'Program A' ? 1 :
-                               currentFilters.program === 'Program B' ? 0.7 :
-                               currentFilters.program === 'Program C' ? 0.5 : 1;
-
-      // Apply stage filter
-      let stageMultipliers = {
-        stage1: 1,
-        stage2: 1,
-        stage3: 1,
-        stage4: 1
-      };
-
-      // Update stage multipliers based on selected stage
-      if (currentFilters.stage !== 'All Stages') {
-        stageMultipliers = {
-          stage1: currentFilters.stage === 'Stage 1' ? 1 : 0,
-          stage2: currentFilters.stage === 'Stage 2' ? 1 : 0,
-          stage3: currentFilters.stage === 'Stage 3' ? 1 : 0,
-          stage4: currentFilters.stage === 'Stage 4' ? 1 : 0
-        };
-      }
-
-      // Update metrics with stage filtering
-      const adjustedStageDistribution = countryData.stageDistribution.map(stage => {
-        const stageData = {
-          ...stage,
-          value: Math.round(stage.value * batchMultiplier * programMultiplier),
-          stage1: Math.round((stage.stage1 || 0) * batchMultiplier * programMultiplier * stageMultipliers.stage1),
-          stage2: Math.round((stage.stage2 || 0) * batchMultiplier * programMultiplier * stageMultipliers.stage2),
-          stage3: Math.round((stage.stage3 || 0) * batchMultiplier * programMultiplier * stageMultipliers.stage3),
-          stage4: Math.round((stage.stage4 || 0) * batchMultiplier * programMultiplier * stageMultipliers.stage4)
-        };
-
-        // Update the total value based on visible stages
-        if (currentFilters.stage !== 'All Stages') {
-          const stageKey = currentFilters.stage.toLowerCase().replace(' ', '') as keyof typeof stageData;
-          const stageValue = stageData[stageKey];
-          stageData.value = typeof stageValue === 'number' ? stageValue : 0;
-        }
-
-        return stageData;
       });
-
-      // Calculate active participants based on selected stage
-      let activeParticipantsMultiplier = 1;
-      if (currentFilters.stage !== 'All Stages') {
-        const stageIndex = parseInt(currentFilters.stage.split(' ')[1]) - 1;
-        activeParticipantsMultiplier = [1, 0.8, 0.6, 0.4][stageIndex] || 1;
-      }
-
-      // Calculate workshop completion data based on filters
-      const workshopCompletion = adjustedStageDistribution.map(stage => ({
-        name: stage.name,
-        completed: Math.round(stage.workshops || 0),
-        pending: Math.round(stage.participants || 0) - Math.round(stage.workshops || 0)
-      }));
-
+      
+      const data = response.data;
       setMetrics({
-        activeParticipants: Math.round(countryData.activeParticipants * batchMultiplier * programMultiplier * activeParticipantsMultiplier),
-        overallProgress: Math.round(countryData.overallProgress * batchMultiplier),
-        stageDistribution: adjustedStageDistribution,
-        progressMetrics: [
-          { subject: 'Stage 1', value: Math.round(85 * batchMultiplier * stageMultipliers.stage1), fullMark: 100 },
-          { subject: 'Stage 2', value: Math.round(70 * batchMultiplier * stageMultipliers.stage2), fullMark: 100 },
-          { subject: 'Stage 3', value: Math.round(65 * programMultiplier * stageMultipliers.stage3), fullMark: 100 },
-          { subject: 'Stage 4', value: Math.round(80 * programMultiplier * stageMultipliers.stage4), fullMark: 100 }
-        ],
-        workshopCompletion: workshopCompletion
+        activeParticipants: data.activeParticipants,
+        overallProgress: data.overallProgress,
+        stageDistribution: data.stageDistribution,
+        progressMetrics: calculateProgressMetrics(data),
+        workshopCompletion: calculateWorkshopCompletion(data)
       });
-
     } catch (error) {
-      console.error('Error updating dashboard data:', error);
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Add helper function to process imported data
-  const processImportedData = (data: any[]) => {
-    // Transform imported data to match the expected format
-    const stages = ['Pre-Visa', 'Visa Processing', 'Onboarding', 'Acknowledgment', 'Training'];
-    return stages.map(stageName => {
-      const stageData = data.filter(item => item.stage === stageName);
-      return {
-        name: stageName,
-        value: stageData.length,
-        status: determineStatus(stageData),
-        stage1: calculateStageMetric(stageData, 'stage1'),
-        stage2: calculateStageMetric(stageData, 'stage2'),
-        stage3: calculateStageMetric(stageData, 'stage3'),
-        stage4: calculateStageMetric(stageData, 'stage4'),
-        totalProgress: calculateProgress(stageData),
-        participants: stageData.length,
-        training: calculateTraining(stageData),
-        workshops: calculateWorkshops(stageData),
-        completion: calculateCompletion(stageData)
-      };
-    });
   };
 
   // Remove the useEffect hook that was watching filters
@@ -763,48 +181,82 @@ export default function ProgramDashboard() {
     updateDashboardData(filters);
   }, [filters]); // Add filters to dependency array
 
+  const handleExcelImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) {
+        console.error('No file selected');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log('Upload result:', result); // Debug log
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      // Refresh dashboard data after successful upload
+      await updateDashboardData(filters);
+    } catch (error) {
+      console.error('Upload error:', error);
+    }
+  };
+
   return (
     <div>
       {/* Header */}
-      <div className="bg-emerald-1000/80 p-1 shadow-lg rounded-xl">
-        <div className="flex flex-col">
-          {/* Top row with login button */}
-          <div className="flex justify-end mb-2 gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".xlsx,.xls"
-              onChange={handleExcelImport}
-              className="hidden"
-              id="excel-import"
-            />
-            <label htmlFor="excel-import">
+      <div className="bg-emerald-900 p-2 shadow-lg rounded-xl">
+        <div className="flex flex-col gap-2">
+          {/* Top row with title, import and login */}
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">Tourism Dashboard</h1>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={() => router.push('/Input')}
+                className="bg-emerald-950/50 hover:bg-[#846EDB] text-white flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add New Data
+              </Button>
+              <label
+                htmlFor="excel-upload"
+                className="inline-flex items-center gap-2 cursor-pointer bg-emerald-950/50 border-[#846EDB] text-white hover:bg-[#846EDB] rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              >
+                <Upload className="h-4 w-4" />
+                Import Excel
+                <input
+                  id="excel-upload"
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleExcelImport}
+                  className="hidden"
+                />
+              </label>
               <Button 
                 variant="outline" 
-                className="bg-emerald-950/50 border-emerald-600/30 text-white hover:bg-[#846EDB] rounded-lg"
-                onClick={() => fileInputRef.current?.click()}
+                className="bg-emerald-950/50 border-emerald-600/30 text-white hover:bg-[#846EDB] hover:text-white rounded-lg"
+                onClick={() => window.location.href = '/#'}
               >
-                Import Excel
+                Login
               </Button>
-            </label>
-            <Button 
-              variant="outline" 
-              className="bg-emerald-950/50 border-emerald-600/30 text-white hover:bg-[#846EDB] rounded-lg"
-              onClick={() => window.location.href = '/#'}
-            >
-              Login
-            </Button>
+            </div>
           </div>
 
-          {/* Bottom row with title and request button */}
+          {/* Bottom row with breadcrumb and request button */}
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Tourism Dashboard</h1>
-              <div className="flex items-center text-emerald-100/80 text-sm">
-                <span>Home</span>
-                <span className="mx-2">›</span>
-                <span>Dashboard</span>
-              </div>
+            <div className="flex items-center text-emerald-100/80 text-sm">
+              <span>Home</span>
+              <span className="mx-2">›</span>
+              <span>Dashboard</span>
             </div>
             <Button 
               variant="outline" 
@@ -817,19 +269,19 @@ export default function ProgramDashboard() {
       </div>
 
       {/* Existing dashboard content */}
-      <div className="p-6 space-y-6">
+      <div className="p-5 space-y-6">
         {/* Filter Panel */}
-        <Card className="p-2 bg-emerald-950/40 backdrop-blur border-emerald-600/30">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card className="p-1 bg-emerald-950/40 backdrop-blur border-emerald-600/30">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-1">
             <FilterSelect
-              placeholder="Country"
+              placeholder="Countrie"
               options={['UAE', 'USA', 'UK', 'Canada', 'Australia']}
               value={filters.country}
               onChange={(value: string) => handleFilterChange('country', value)}
               
             />
             <FilterSelect
-              placeholder="Batch"
+              placeholder="Batche"
               options={['2024-Q1', '2024-Q2', '2024-Q3']}
               value={filters.batch}
               onChange={(value: string) => handleFilterChange('batch', value)}
@@ -862,22 +314,6 @@ export default function ProgramDashboard() {
           </div>
         </Card>
 
-        {importedData && (
-          <div className="flex items-center gap-2 px-2 py-1 bg-emerald-900/30 rounded-md border border-[#6D988B]">
-            <span className="text-emerald-50 text-sm">📄 Imported Data</span>
-            <button
-              onClick={() => {
-                setImportedData(null);
-                updateDashboardData(filters);
-                if (fileInputRef.current) fileInputRef.current.value = '';
-              }}
-              className="text-emerald-50 hover:text-red-400"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
         {isLoading ? (
           <div className="flex items-center justify-center h-[400px]">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
@@ -894,7 +330,7 @@ export default function ProgramDashboard() {
               />
               <MetricCard
                 title="Overall Progress"
-                value={metrics.overallProgress}
+                value={Math.round(metrics.overallProgress)}
                 status="warning"
                 isPercentage={true}
               />
@@ -1136,40 +572,6 @@ export default function ProgramDashboard() {
   );
 }
 
-// Helper functions for processing imported data
-function calculateStageMetric(data: any[], metric: string) {
-  return data.reduce((acc, item) => acc + (Number(item[metric]) || 0), 0);
-}
-
-function calculateProgress(data: any[]) {
-  return data.reduce((acc, item) => acc + (Number(item.progress) || 0), 0) / (data.length || 1);
-}
-
-function calculateTraining(data: any[]) {
-  return data.reduce((acc, item) => acc + (Number(item.training) || 0), 0);
-}
-
-function calculateWorkshops(data: any[]) {
-  return data.reduce((acc, item) => acc + (Number(item.workshops) || 0), 0);
-}
-
-function calculateCompletion(data: any[]) {
-  return data.reduce((acc, item) => acc + (Number(item.completion) || 0), 0) / (data.length || 1);
-}
-
-function determineStatus(data: any[]): 'onTrack' | 'delayed' | 'critical' | 'onprogress' {
-  const avgProgress = calculateProgress(data);
-  if (avgProgress >= 80) return 'onTrack';
-  if (avgProgress >= 60) return 'delayed';
-  return 'critical';
-}
-
-function calculateOverallProgress(data: any[]) {
-  return Math.round(
-    data.reduce((acc, item) => acc + (Number(item.progress) || 0), 0) / (data.length || 1)
-  );
-}
-
 // Component for filter select dropdowns
 function FilterSelect({ placeholder, options, value, onChange }: { 
   placeholder: string, 
@@ -1348,7 +750,7 @@ function ChartCard({
               }}
             />
             <Legend />
-            <Bar dataKey="completed" fill={THEME.colors.primary} stackId="a" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="completed" fill={THEME.colors.primary} stackId="a">
               <LabelList 
                 dataKey="completed" 
                 position="center"
@@ -1361,7 +763,7 @@ function ChartCard({
                 }}
               />
             </Bar>
-            <Bar dataKey="pending" fill={THEME.colors.warning} stackId="a" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="pending" fill={THEME.colors.warning} stackId="a">
               <LabelList 
                 dataKey="pending" 
                 position="center"
@@ -1474,10 +876,9 @@ function ChartCard({
             <Bar 
               dataKey="participants" 
               fill={THEME.colors.primary}
-              fillOpacity={0.7}  // Increased from previous value to make it lighter
+              fillOpacity={0.4}
               barSize={40}
               name="Participants Count"
-              radius={[4, 4, 0, 0]} 
             >
               <LabelList 
                 dataKey="participants" 

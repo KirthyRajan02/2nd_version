@@ -64,14 +64,9 @@ export default function SuccessMetrics() {
           </select>
         </div>
         <div className="flex space-x-2">
-          <button className="bg-[#3E615F] text-white p-2 rounded-md flex items-center">
-            <span>Apply Filter</span>
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
+
           <button className="bg-[#3E615F] text-white p-2 rounded-md">
-            Clear
+            Reset Filter
           </button>
         </div>
       </div>

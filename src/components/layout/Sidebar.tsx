@@ -1,6 +1,6 @@
 'use client'
 
-import { Menu as MenuIcon, ChevronRight as ChevronRightIcon, LayoutDashboard, Users, Clock, Building2, LineChart, Bell, Settings } from 'lucide-react'
+import { Menu as MenuIcon, ChevronRight as ChevronRightIcon, LayoutDashboard, Users, Clock, Building2, LineChart, Bell, Settings, BarChart, GitBranch } from 'lucide-react'
 import { useLayoutStore } from '@/store/layout-store'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
@@ -8,14 +8,14 @@ import { usePathname } from 'next/navigation'
 
 const navigationItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' }, // D:\project\key performance indicators\src\app\dashboard
-  { name: 'Participant Distribution & Location Metrics', icon: Users, path: '/participation' },
+  { name: 'Participant Distribution & Location Metrics', icon: GitBranch, path: '/participation' },
   { name: 'Trainee Metrics', icon: Users, path: '/trainee' },
   // { name: 'Program Stage Metrics', icon: GitBranch, path: '/programstage' },
   { name: 'Timeline & Duration Metrics', icon: Clock, path: '/timeline/dashboard' },
   { name: 'Organizational Metrics', icon: Building2, path: '/organization' },
   { name: 'Key Performance Indicators (KPIs)', icon: LineChart, path: '/kpi' }, // D:\project\key performance indicators\src\app\kpi
   { name: 'Status Alerts & Critical Information', icon: Bell, path: '/statusalerts' },
-  { name: 'Survey Metrics', icon: LineChart, path: '/survey' },
+  { name: 'Survey Metrics', icon: BarChart, path: '/survey' },
   { name: 'Administrative Metrics', icon: Settings, path: '/admin' }
 ]
 

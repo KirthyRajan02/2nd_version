@@ -26,11 +26,11 @@ export const hotelData = [
   ];
   
   export const sectorData = [
-    { name: "Hospitality Management", value: 350 },
-    { name: "Tourism Services", value: 280 },
-    { name: "Event Management", value: 200 },
-    { name: "Cultural Tourism", value: 150 },
-    { name: "Adventure Tourism", value: 120 }
+    { name: "Hospitality Management", value: 150 },
+    { name: "Tourism Services", value: 100 },
+    { name: "Event Management", value: 80 },
+    { name: "Cultural Tourism", value: 35 },
+    { name: "Adventure Tourism", value: 35 }
   ];
   
   export const locationData = [

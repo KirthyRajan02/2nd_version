@@ -66,14 +66,9 @@ export default function CompletionRates() {
           </select>
         </div>
         <div className="flex space-x-2">
-          <button className="bg-[#3E615F] text-white p-2 rounded-md flex items-center">
-            <span>Apply Filter</span>
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
+
           <button className="bg-[#3E615F] text-white p-2 rounded-md">
-            Clear
+            Reset Filter
           </button>
         </div>
       </div>
@@ -116,50 +111,59 @@ export default function CompletionRates() {
       <Card className="bg-[#082525] p-1.5 border-[#3E615F]">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {/* First Row */}
-          <Card className="bg-[#093632] p-4  border-[#082525]">
-          <h3 className="text-lg font-medium mb-4">Completion Rate Trend</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={mockData.completionTrend}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{ fill: '#FFFFFF' }} />
-              <YAxis domain={[0, 100]} tick={{ fill: '#FFFFFF' }} />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="rate" 
-                stroke="#059669" 
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-          </div>
-        </Card>
+          <Card className="bg-[#093632] p-4 border-[#082525]">
+            <h3 className="text-lg font-medium mb-4 text-white">Completion Rate Trend</h3>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={mockData.completionTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#3E615F" />
+                  <XAxis dataKey="month" tick={{ fill: '#FFFFFF' }} />
+                  <YAxis domain={[0, 100]} tick={{ fill: '#FFFFFF' }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#082525', 
+                      border: '1px solid #3E615F',
+                      color: '#FFFFFF'
+                    }}
+                    labelStyle={{ color: '#FFFFFF' }}
+                  />
+                  <Line type="monotone" dataKey="rate" stroke="#059669" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
 
-      <Card className="bg-[#093632] p-4  border-[#082525]">
-          <h3 className="text-lg font-medium mb-4">Completion Status Distribution</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={mockData.completionStatus}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {mockData.completionStatus.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+          <Card className="bg-[#093632] p-4 border-[#082525]">
+            <h3 className="text-lg font-medium mb-4 text-white">Completion Status Distribution</h3>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={mockData.completionStatus}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {mockData.completionStatus.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#082525', 
+                      border: '1px solid #3E615F',
+                      color: '#FFFFFF'
+                    }}
+                    labelStyle={{ color: '#FFFFFF' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
 
         </div>
       </Card>
