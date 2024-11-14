@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
 import MapView from '@/app/dashboard/MapView';
 import { Upload, Plus } from "lucide-react";
-import axios from 'axios';
+import { axiosInstance } from '@/lib/axios';
 import { useRouter } from 'next/navigation';
 
 
@@ -148,30 +148,41 @@ export default function ProgramDashboard() {
 
   // Add a new function to handle data updates
   const updateDashboardData = async (currentFilters: DashboardFilters) => {
-    setIsLoading(true);
-    try {
-      // Fetch data from MongoDB instead of static data
-      const response = await axios.get('/api/dashboard', {
-        params: {
-          country: currentFilters.country,
-          batch: currentFilters.batch,
-          stage: currentFilters.stage,
-          program: currentFilters.program
+    const MAX_RETRIES = 3;
+    let retries = 0;
+
+    while (retries < MAX_RETRIES) {
+      try {
+        setIsLoading(true);
+        const response = await axiosInstance.get('/dashboard', {
+          params: {
+            country: currentFilters.country,
+            batch: currentFilters.batch,
+            stage: currentFilters.stage,
+            program: currentFilters.program
+          }
+        });
+        
+        const data = response.data;
+        setMetrics({
+          activeParticipants: data.activeParticipants,
+          overallProgress: data.overallProgress,
+          stageDistribution: data.stageDistribution,
+          progressMetrics: calculateProgressMetrics(data),
+          workshopCompletion: calculateWorkshopCompletion(data)
+        });
+        break; // Success, exit the retry loop
+      } catch (error: any) {
+        if (error?.status === 504 && retries < MAX_RETRIES - 1) {
+          retries++;
+          await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+          continue;
         }
-      });
-      
-      const data = response.data;
-      setMetrics({
-        activeParticipants: data.activeParticipants,
-        overallProgress: data.overallProgress,
-        stageDistribution: data.stageDistribution,
-        progressMetrics: calculateProgressMetrics(data),
-        workshopCompletion: calculateWorkshopCompletion(data)
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setIsLoading(false);
+        console.error('Error fetching dashboard data:', error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
