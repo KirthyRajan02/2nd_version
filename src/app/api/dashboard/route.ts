@@ -1,5 +1,26 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+// import { MongoClient } from 'mongodb';
+import { dbConnect , } from '@/lib/db';
+
+
+
+console.log( dbConnect('tourism_dashboard', 'tourismdata'));
+const collection = await dbConnect('tourism_dashboard', 'tourismdata')
+console.log("collection");
+
+// const client = new MongoClient(process.env.MONGODB_URI, options);
+// console.log("client");
+// console.log(client.connect());
+// await client.connect();
+// console.log('Connected to MongoDB');
+
+// Initialize connection
+// try {
+//   // await client.connect();
+//   console.log('Connected to MongoDB');
+// } catch (error) {
+//   console.error('Error connecting to MongoDB in dashboard route:', error);
+// }
 
 export async function GET(request: Request) {
   try {
@@ -9,10 +30,11 @@ export async function GET(request: Request) {
     const stage = searchParams.get('stage');
     const program = searchParams.get('program');
 
-    // Connect to MongoDB
-    const client = await MongoClient.connect(process.env.MONGODB_URI as string);
-    const db = client.db('tourism_dashboard');
-    const collection = db.collection('tourismdata');
+    // const db = client.db('tourism_dashboard');
+    // const collection = db.collection('tourismdata');
+
+    // Fetch all data first for total count
+    const allData = await collection.find({}).toArray();
 
     // Build query based on filters
     const query: any = {};
@@ -21,21 +43,54 @@ export async function GET(request: Request) {
     if (stage && stage !== 'All Stages') query.stage = stage;
     if (program && program !== 'All Programs') query.program = program;
 
-    // Fetch and aggregate data
-    const data = await collection.find(query).toArray();
+    // Fetch and process filtered data
+    const filteredData = await collection.find(query).toArray();
     
-    // Transform data to match dashboard requirements
+    const processedData = filteredData.map((item: Record<string, any>) => ({
+      basicInfo: {
+        country: item.country,
+        batch: item.batch,
+        stage: item.stage,
+        programs: item.programs,
+        status: item.status,
+        month: item.month
+      },
+      metrics: {
+        completion: item.completion,
+        participants: item.participants,
+        progress: item.progress,
+        totalProgress: item.totalProgress
+      },
+      stages: {
+        stage1: item.stage1,
+        stage2: item.stage2,
+        stage3: item.stage3,
+        stage4: item.stage4
+      },
+      activities: {
+        training: item.training,
+        workshops: item.workshops
+      }
+    }));
+
     const transformedData = {
-      activeParticipants: data.length,
-      overallProgress: calculateOverallProgress(data),
-      stageDistribution: calculateStageDistribution(data)
+      activeParticipants: filteredData.length,
+      totalParticipants: allData.length,
+      overallProgress: calculateOverallProgress(filteredData),
+      stageDistribution: calculateStageDistribution(allData),
+      filteredData: processedData
     };
 
-    await client.close();
     return NextResponse.json(transformedData);
   } catch (error) {
     console.error('Dashboard error:', error);
-    return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
+    // Return a more detailed error response
+    return NextResponse.json({ 
+      error: 'Failed to fetch dashboard data',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, { 
+      status: 500 
+    });
   }
 }
 
@@ -55,6 +110,26 @@ function calculateStageDistribution(data: any[]) {
 }
 
 function determineStatus(stage: string, data: any[]) {
-  // Implement your status determination logic
+  const stageData = data.filter(item => item.stage === stage);
+  
+  if (stageData.length === 0) return 'onTrack';
+  
+  // Count occurrences of each status
+  const statusCounts = stageData.reduce((acc: Record<string, number>, item) => {
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  // If any critical cases exist, return critical
+  if (statusCounts['critical'] > 0) return 'critical';
+  
+  // If delayed cases are more than 30% of total, return delayed
+  const delayedPercentage = (statusCounts['delayed'] || 0) / stageData.length;
+  if (delayedPercentage > 0.3) return 'delayed';
+  
+  // If there are any in progress cases, return onprogress
+  if (statusCounts['onprogress'] > 0) return 'onprogress';
+  
+  // Default to onTrack
   return 'onTrack';
 } 

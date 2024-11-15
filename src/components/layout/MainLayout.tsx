@@ -17,7 +17,7 @@ export default function MainLayout({
         isCollapsed ? 'ml-16' : 'ml-64'
       }`}>
          
-        <main className="pt-20 px-6">
+        <main className="pt-8 px-5">
           {children}
         </main>
       </div>

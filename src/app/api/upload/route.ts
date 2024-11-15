@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
 import * as XLSX from 'xlsx';
+import { dbConnect ,disconnect} from '@/lib/db';
+
 
 export async function POST(request: Request) {
   try {
@@ -25,36 +26,46 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Database configuration error' }, { status: 500 });
     }
 
-    // Connect to MongoDB
-    const client = await MongoClient.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB'); // Debug log
+    try {
+      const collection = await dbConnect('tourism_dashboard', 'tourismdata');
+      console.log('Connected to MongoDB'); // Debug log
 
-    const db = client.db('tourism_dashboard');
-    const collection = db.collection('tourismdata');
+      // const db = client.db('tourism_dashboard');
+      // const collection = db.collection('tourismdata');
 
-    if (jsonData.length > 0) {
-      // Create operations array for bulkWrite
-      const operations = jsonData.map((doc: any) => ({
-        updateOne: {
-          filter: {
-            month: doc.month,
-            country: doc.country,
-            stage: doc.stage
-          },
-          update: { $set: doc },
-          upsert: true // Insert if doesn't exist, update if exists
-        }
-      }));
+      if (jsonData.length > 0) {
+        // Create operations array for bulkWrite
+        const operations = jsonData.map((doc: any) => ({
+          updateOne: {
+            filter: {
+              month: doc.month,
+              country: doc.country,
+              stage: doc.stage
+            },
+            update: { $set: doc },
+            upsert: true // Insert if doesn't exist, update if exists
+          }
+        }));
 
-      const result = await collection.bulkWrite(operations);
-      
+        const result = await collection.bulkWrite(operations);
+        
+        return NextResponse.json({ 
+          success: true, 
+          message: `Processed ${result.upsertedCount} new and ${result.modifiedCount} existing documents`
+        });
+      } else {
+        console.error('No data to insert');
+        return NextResponse.json({ error: 'No data to insert' }, { status: 400 });
+      }
+
+    } catch (error) {
+      console.error('Upload error:', error);
       return NextResponse.json({ 
-        success: true, 
-        message: `Processed ${result.upsertedCount} new and ${result.modifiedCount} existing documents`
-      });
-    } else {
-      console.error('No data to insert');
-      return NextResponse.json({ error: 'No data to insert' }, { status: 400 });
+        error: 'Upload failed', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 });
+    } finally {
+      await disconnect();
     }
 
   } catch (error) {

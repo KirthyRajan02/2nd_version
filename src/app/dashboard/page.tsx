@@ -255,7 +255,7 @@ export default function ProgramDashboard() {
               <Button 
                 variant="outline" 
                 className="bg-emerald-950/50 border-emerald-600/30 text-white hover:bg-[#846EDB] hover:text-white rounded-lg"
-                onClick={() => window.location.href = '/#'}
+                onClick={() => window.location.href = '/user'}
               >
                 Login
               </Button>

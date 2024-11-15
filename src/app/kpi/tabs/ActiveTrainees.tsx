@@ -239,7 +239,9 @@ export default function ActiveTrainees() {
               <SelectItem className="text-white hover:bg-[#3E615F] focus:bg-[#3E615F] focus:text-white" value="All Countries">All Countries</SelectItem>
               <SelectItem className="text-white hover:bg-[#3E615F] focus:bg-[#3E615F] focus:text-white" value="USA">USA</SelectItem>
               <SelectItem className="text-white hover:bg-[#3E615F] focus:bg-[#3E615F] focus:text-white" value="UK">UK</SelectItem>
-              <SelectItem className="text-white hover:bg-[#3E615F] focus:bg-[#3E615F] focus:text-white" value="Australia">Australia</SelectItem>
+              <SelectItem className="text-white hover:bg-[#3E615F] focus:bg-[#3E615F] focus:text-white" value="UAE">UAE</SelectItem>
+              <SelectItem className="text-white hover:bg-[#3E615F] focus:bg-[#3E615F] focus:text-white" value="Canada">Canada</SelectItem>
+              
             </SelectContent>
           </Select>
 
