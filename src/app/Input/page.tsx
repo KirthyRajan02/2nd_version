@@ -94,7 +94,10 @@ export default function InputPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm text-emerald-100">Country</label>
-                <Select onValueChange={(value) => handleInputChange('country', value)}>
+                <Select 
+                  value={formData.country}
+                  onValueChange={(value) => handleInputChange('country', value)}
+                >
                   <SelectTrigger className="bg-emerald-950/50 border-emerald-600/30 text-white">
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
@@ -110,7 +113,10 @@ export default function InputPage() {
 
               <div className="space-y-2">
                 <label className="text-sm text-emerald-100">Batch</label>
-                <Select onValueChange={(value) => handleInputChange('batch', value)}>
+                <Select 
+                  value={formData.batch}
+                  onValueChange={(value) => handleInputChange('batch', value)}
+                >
                   <SelectTrigger className="bg-emerald-950/50 border-emerald-600/30 text-white">
                     <SelectValue placeholder="Select Batch" />
                   </SelectTrigger>

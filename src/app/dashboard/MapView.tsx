@@ -4,7 +4,6 @@ import { useEffect, useRef, useCallback, useMemo } from 'react'
 import * as d3 from 'd3'
 import { feature } from 'topojson-client'
 import { Topology, GeometryCollection } from 'topojson-specification'
-import { FeatureCollection } from 'geojson'
 
 interface MapViewProps {
   activeFilters: {
@@ -29,6 +28,12 @@ interface CityCoordinate {
   lng: number
   name: string
   country: string
+}
+
+interface WorldData extends Topology<{ countries: GeometryCollection }> {
+  objects: {
+    countries: GeometryCollection;
+  };
 }
 
 // Helper function for city coordinates
@@ -85,7 +90,7 @@ const MapView = ({ activeFilters }: MapViewProps) => {
 
     try {
       const response = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
-      const worldData = await response.json()
+      const worldData = (await response.json()) as WorldData
       const cityCoords = getCityCoordinates()
 
       const width = 1200
@@ -113,7 +118,7 @@ const MapView = ({ activeFilters }: MapViewProps) => {
 
       // Draw world map
       g.selectAll("path")
-        .data((feature(worldData as Topology<{ countries: GeometryCollection }>, worldData.objects.countries) as unknown as FeatureCollection).features)
+        .data(feature(worldData, worldData.objects.countries).features)
         .join("path")
         .attr("fill", "#1D4B44")
         .attr("d", path)
@@ -222,8 +227,8 @@ uniqueCities.forEach(cityName => {
       // Add zoom capabilities
       const zoom = d3.zoom<SVGSVGElement, unknown>()
         .scaleExtent([1, 8])
-        .on("zoom", (event) => {
-          g.attr("transform", event.transform)
+        .on("zoom", (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+          g.attr("transform", event.transform.toString())
         })
 
       svg.call(zoom)

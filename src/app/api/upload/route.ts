@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { dbConnect ,disconnect} from '@/lib/db';
 
+interface UploadData {
+  month: string;
+  country: string;
+  stage: string;
+  [key: string]: string | number // for dynamic fields that can be strings or numbers
+}
 
 export async function POST(request: Request) {
   try {
@@ -17,7 +23,7 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer);
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    const jsonData = XLSX.utils.sheet_to_json(worksheet) as UploadData[];
 
     console.log('Parsed Excel data:', jsonData); // Debug log
 
@@ -35,7 +41,7 @@ export async function POST(request: Request) {
 
       if (jsonData.length > 0) {
         // Create operations array for bulkWrite
-        const operations = jsonData.map((doc: any) => ({
+        const operations = jsonData.map((doc: UploadData) => ({
           updateOne: {
             filter: {
               month: doc.month,

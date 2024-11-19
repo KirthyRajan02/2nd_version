@@ -1,10 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, XAxis, YAxis, Tooltip } from "recharts";
 
+interface ChartData {
+  [key: string]: string | number;  // Allows for dynamic key-value pairs
+}
+
 interface ChartCardProps {
   title: string;
   chart: "line" | "bar" | "area" | "pie";
-  data: any[];
+  data: ChartData[];
   layout?: "vertical" | "horizontal";
   margin?: { top: number; right: number; bottom: number; left: number };
 }

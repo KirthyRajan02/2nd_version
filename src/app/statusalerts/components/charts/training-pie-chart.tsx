@@ -10,13 +10,13 @@ const TRAINING_COLORS = {
   'On Track': '#8BC34A'        // Light Green
 } as const;
 
-export interface TrainingDataItem {
+interface TrainingData {
   category: string;
   count: number;
-  percentage?: number;
+  percentage: number;
 }
 
-export function TrainingPieChart({ data }: { data: TrainingDataItem[] }) {
+export function TrainingPieChart({ data }: { data: TrainingData[] }) {
   if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
@@ -34,7 +34,7 @@ export function TrainingPieChart({ data }: { data: TrainingDataItem[] }) {
             paddingAngle={1}
             dataKey="count"
             nameKey="category"
-            label={(entry) => {
+            label={(entry: TrainingData) => {
               return `${entry.category} (${entry.count}) - ${entry.percentage?.toFixed(1)}%`;
             }}
             labelLine={{ 

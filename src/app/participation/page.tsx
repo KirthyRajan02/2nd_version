@@ -51,7 +51,7 @@ export default function Dashboard() {
           }}>
             <Tabs 
               value={selectedTab} 
-              onChange={(e, newValue) => setSelectedTab(newValue)}
+              onChange={(_e: React.SyntheticEvent, newValue: number) => setSelectedTab(newValue)}
               sx={{ 
                 '& .MuiTab-root': { 
                   color: 'grey.400',

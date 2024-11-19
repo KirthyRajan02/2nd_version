@@ -92,7 +92,13 @@ interface ChartData {
 }
 
 // Add these helper functions before the ProgramDashboard component
-const calculateProgressMetrics = (data: any): ProgressMetric[] => {
+interface DashboardData {
+  activeParticipants: number;
+  overallProgress: number;
+  stageDistribution: StageData[];
+}
+
+const calculateProgressMetrics = (data: DashboardData): ProgressMetric[] => {
   return [
     { subject: 'Participants', value: data.activeParticipants, fullMark: 1000 },
     { subject: 'Training', value: data.overallProgress, fullMark: 100 },
@@ -101,13 +107,26 @@ const calculateProgressMetrics = (data: any): ProgressMetric[] => {
   ];
 };
 
-const calculateWorkshopCompletion = (data: any): WorkshopData[] => {
+const calculateWorkshopCompletion = (data: DashboardData): WorkshopData[] => {
   return data.stageDistribution.map((stage: StageData) => ({
     name: stage.name,
     completed: stage.workshops || 0,
     pending: (stage.participants || 0) - (stage.workshops || 0)
   }));
 };
+
+// Add interface for API response
+interface DashboardApiResponse {
+  activeParticipants: number;
+  overallProgress: number;
+  stageDistribution: StageData[];
+}
+
+interface UploadResponse {
+  error?: string;
+  success?: boolean;
+  // Add other expected response fields here
+}
 
 export default function ProgramDashboard() {
   const router = useRouter();
@@ -146,7 +165,7 @@ export default function ProgramDashboard() {
     updateDashboardData(defaultFilters);
   };
 
-  // Add a new function to handle data updates
+  // Update the updateDashboardData function
   const updateDashboardData = async (currentFilters: DashboardFilters) => {
     const MAX_RETRIES = 3;
     let retries = 0;
@@ -154,7 +173,7 @@ export default function ProgramDashboard() {
     while (retries < MAX_RETRIES) {
       try {
         setIsLoading(true);
-        const response = await axiosInstance.get('/dashboard', {
+        const response = await axiosInstance.get<DashboardApiResponse>('/dashboard', {
           params: {
             country: currentFilters.country,
             batch: currentFilters.batch,
@@ -163,7 +182,7 @@ export default function ProgramDashboard() {
           }
         });
         
-        const data = response.data;
+        const data: DashboardApiResponse = response.data;
         setMetrics({
           activeParticipants: data.activeParticipants,
           overallProgress: data.overallProgress,
@@ -171,15 +190,21 @@ export default function ProgramDashboard() {
           progressMetrics: calculateProgressMetrics(data),
           workshopCompletion: calculateWorkshopCompletion(data)
         });
-        break; // Success, exit the retry loop
-      } catch (error: any) {
-        if (error?.status === 504 && retries < MAX_RETRIES - 1) {
+        break;
+      } catch (error) {
+        if (
+          error && 
+          typeof error === 'object' && 
+          'status' in error && 
+          error.status === 504 && 
+          retries < MAX_RETRIES - 1
+        ) {
           retries++;
           await new Promise(resolve => setTimeout(resolve, 1000 * retries));
           continue;
         }
         console.error('Error fetching dashboard data:', error);
-        throw error;
+        throw new Error(error instanceof Error ? error.message : 'Unknown error');
       } finally {
         setIsLoading(false);
       }
@@ -208,8 +233,8 @@ export default function ProgramDashboard() {
         body: formData,
       });
 
-      const result = await response.json();
-      console.log('Upload result:', result); // Debug log
+      const result = (await response.json()) as UploadResponse;
+      console.log('Upload result:', result);
 
       if (!response.ok) {
         throw new Error(result.error || 'Upload failed');

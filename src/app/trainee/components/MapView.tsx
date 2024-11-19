@@ -5,6 +5,7 @@ import * as d3 from 'd3'
 import { feature } from 'topojson-client'
 import { participantsData } from '../data/participants'
 import { uaeGeoJson } from '../data/uae-states'
+import type { Topology, GeometryObject } from 'topojson-specification';
 
 interface MapViewProps {
   activeFilters: {
@@ -27,9 +28,18 @@ function getCountryCoordinates(country: string) {
   return coordinates[country] || { lat: 0, lng: 0 }
 }
 
-// Add this interface near the top of the file with other interfaces
-
-// Update the interface
+// Add these interfaces at the top with other interfaces
+interface WorldTopology {
+  type: string;
+  objects: {
+    countries: GeometryObject;
+  };
+  arcs: number[][][];
+  transform: {
+    scale: [number, number];
+    translate: [number, number];
+  };
+}
 
 interface FeatureCollection {
   type: string;
@@ -40,7 +50,7 @@ interface GeoFeature {
   type: string;
   properties: {
     name: string;
-    [key: string]: string | number;
+    [key: string]: string | number;  // allows for other properties while requiring 'name'
   };
   geometry: {
     type: string;
@@ -139,8 +149,8 @@ const MapView = ({ activeFilters }: MapViewProps) => {
     // Add zoom capabilities
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
-      .on("zoom", (event) => {
-        g.attr("transform", event.transform)
+      .on("zoom", (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+        g.attr("transform", event.transform.toString())
       })
 
     svg.call(zoom)
@@ -151,7 +161,7 @@ const MapView = ({ activeFilters }: MapViewProps) => {
 
     try {
       const response = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
-      const worldData = await response.json()
+      const worldData = (await response.json()) as WorldTopology
 
       const width = 900
       const height = 450
@@ -176,10 +186,10 @@ const MapView = ({ activeFilters }: MapViewProps) => {
 
       // Draw world map
       g.selectAll("path")
-        .data((feature(worldData, worldData.objects.countries) as unknown as FeatureCollection).features)
+        .data((feature(worldData as unknown as Topology, worldData.objects.countries) as FeatureCollection).features)
         .join("path")
-        .attr("fill", (d: GeoFeature) => d.properties.name === "India" ? "#1a3f3a" : "#1D4B44")
-        .attr("d", (d: GeoFeature) => path(d as d3.GeoPermissibleObjects) || "")
+        .attr("fill", (d) => d.properties.name === "India" ? "#1a3f3a" : "#1D4B44")
+        .attr("d", (d) => path(d as d3.GeoPermissibleObjects) || "")
         .attr("stroke", "#4FD1C5")
         .attr("stroke-width", 0.5)
 

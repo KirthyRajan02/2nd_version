@@ -2,7 +2,32 @@ import { NextResponse } from 'next/server';
 // import { MongoClient } from 'mongodb';
 import { dbConnect , } from '@/lib/db';
 
+// Add interfaces for our data structures
+interface TourismData {
+  country: string;
+  batch: string;
+  stage: string;
+  programs: string[];
+  status: string;
+  month: string;
+  completion: number;
+  participants: number;
+  progress: number;
+  totalProgress: number;
+  stage1: number;
+  stage2: number;
+  stage3: number;
+  stage4: number;
+  training: number;
+  workshops: number;
+}
 
+interface QueryFilters {
+  country?: string;
+  batch?: string;
+  stage?: string;
+  program?: string;
+}
 
 console.log( dbConnect('tourism_dashboard', 'tourismdata'));
 const collection = await dbConnect('tourism_dashboard', 'tourismdata')
@@ -37,7 +62,7 @@ export async function GET(request: Request) {
     const allData = await collection.find({}).toArray();
 
     // Build query based on filters
-    const query: any = {};
+    const query: QueryFilters = {};
     if (country && country !== 'All Countries') query.country = country;
     if (batch && batch !== 'All Batches') query.batch = batch;
     if (stage && stage !== 'All Stages') query.stage = stage;
@@ -46,38 +71,38 @@ export async function GET(request: Request) {
     // Fetch and process filtered data
     const filteredData = await collection.find(query).toArray();
     
-    const processedData = filteredData.map((item: Record<string, any>) => ({
+    const processedData = filteredData.map((item) => ({
       basicInfo: {
-        country: item.country,
-        batch: item.batch,
-        stage: item.stage,
-        programs: item.programs,
-        status: item.status,
-        month: item.month
+        country: (item as unknown as TourismData).country,
+        batch: (item as unknown as TourismData).batch,
+        stage: (item as unknown as TourismData).stage,
+        programs: (item as unknown as TourismData).programs,
+        status: (item as unknown as TourismData).status,
+        month: (item as unknown as TourismData).month
       },
       metrics: {
-        completion: item.completion,
-        participants: item.participants,
-        progress: item.progress,
-        totalProgress: item.totalProgress
+        completion: (item as unknown as TourismData).completion,
+        participants: (item as unknown as TourismData).participants,
+        progress: (item as unknown as TourismData).progress,
+        totalProgress: (item as unknown as TourismData).totalProgress
       },
       stages: {
-        stage1: item.stage1,
-        stage2: item.stage2,
-        stage3: item.stage3,
-        stage4: item.stage4
+        stage1: (item as unknown as TourismData).stage1,
+        stage2: (item as unknown as TourismData).stage2,
+        stage3: (item as unknown as TourismData).stage3,
+        stage4: (item as unknown as TourismData).stage4
       },
       activities: {
-        training: item.training,
-        workshops: item.workshops
+        training: (item as unknown as TourismData).training,
+        workshops: (item as unknown as TourismData).workshops
       }
     }));
 
     const transformedData = {
       activeParticipants: filteredData.length,
       totalParticipants: allData.length,
-      overallProgress: calculateOverallProgress(filteredData),
-      stageDistribution: calculateStageDistribution(allData),
+      overallProgress: calculateOverallProgress(filteredData as unknown as TourismData[]),
+      stageDistribution: calculateStageDistribution(allData as unknown as TourismData[]),
       filteredData: processedData
     };
 
@@ -94,13 +119,11 @@ export async function GET(request: Request) {
   }
 }
 
-function calculateOverallProgress(data: any[]) {
-  // Implement your progress calculation logic
+function calculateOverallProgress(data: TourismData[]): number {
   return data.reduce((acc, curr) => acc + (curr.progress || 0), 0) / data.length;
 }
 
-function calculateStageDistribution(data: any[]) {
-  // Implement your stage distribution logic
+function calculateStageDistribution(data: TourismData[]) {
   const stages = ['Pre-Visa', 'Visa Processing', 'Onboarding', 'Acknowledgment', 'Training'];
   return stages.map(stage => ({
     name: stage,
@@ -109,7 +132,7 @@ function calculateStageDistribution(data: any[]) {
   }));
 }
 
-function determineStatus(stage: string, data: any[]) {
+function determineStatus(stage: string, data: TourismData[]): string {
   const stageData = data.filter(item => item.stage === stage);
   
   if (stageData.length === 0) return 'onTrack';

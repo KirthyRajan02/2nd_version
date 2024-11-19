@@ -1,5 +1,5 @@
 import { Mongoose } from "mongoose";
-import { MongoClient } from 'mongodb';
+import { MongoClient, Db, Collection } from 'mongodb';
 import dns from 'dns';
 
 // Set Google DNS servers
@@ -9,11 +9,12 @@ interface GlobalMongoose {
   conn: Mongoose | null;
   promise: Promise<Mongoose> | null;
   client: MongoClient | null;
-  db: any | null;
-  collection: any | null;
+  db: Db | null;
+  collection: Collection | null;
 }
 
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: GlobalMongoose;
 }
 
